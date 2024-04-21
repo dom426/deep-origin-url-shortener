@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@url-shortener/url-shortener-models": [
+        "url-shortener-models/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
