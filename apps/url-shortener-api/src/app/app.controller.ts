@@ -9,6 +9,8 @@ import {
   CreateShortenedUrlResponse,
   GetShortenedUrlByAliasRequest,
   GetShortenedUrlByAliasResponse,
+  GetShortenedUrlsByAccountRequest,
+  GetShortenedUrlsByAccountResponse,
   LoginRequest,
   LoginResponse,
   UpdateShortenedUrlRequest,
@@ -26,7 +28,9 @@ export class AppController {
   }
 
   @Post('login')
-  async login(@Body() request: LoginRequest): Promise<LoginResponse> {
+  async login(@Body() req: Request): Promise<LoginResponse> {
+    const request = req as LoginRequest;
+
     const response: LoginResponse = {
       data: {
         type: 'account',
@@ -151,8 +155,6 @@ export class AppController {
   async createShortenedUrl(
     @Body() request: CreateShortenedUrlRequest
   ): Promise<CreateShortenedUrlResponse> {
-    console.log('TESTING!!!!');
-    console.log(request);
     const response: CreateShortenedUrlResponse = {
       data: {
         type: 'shortenedUrl',
@@ -161,6 +163,7 @@ export class AppController {
       },
       errors: [],
     };
+    console.log(request);
 
     if (
       request &&
@@ -168,26 +171,31 @@ export class AppController {
       request.data.attributes?.url
     ) {
       try {
+        console.log('STESTING');
         const db = new PrismaClient();
 
+        console.log('STESTING 2: ' + request.data.attributes.account_id);
         const shortenedUrl = await db.shortened_url.create({
           data: {
             alias: request.data.attributes.alias,
             url: request.data.attributes.url,
             created_at: new Date(),
             updated_at: new Date(),
+            account_id:
+              request.data.attributes.account_id >= 0
+                ? request.data.attributes.account_id
+                : undefined,
           },
         });
 
+        console.log('STESTING 3');
         db.$disconnect();
 
-        console.log(shortenedUrl);
+        console.log('STESTING 4');
         if (shortenedUrl && shortenedUrl.id >= 0) {
           response.data.id = shortenedUrl.id;
           response.data.attributes.alias = shortenedUrl.alias;
           response.data.attributes.url = shortenedUrl.url;
-          console.log('response');
-          console.log(response);
         } else {
           response.errors.push({
             detail:
@@ -305,6 +313,66 @@ export class AppController {
           response.errors.push({
             detail:
               'Shortened URL not found with given attributes. Failed to get!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
+        response.errors.push({
+          detail: ex,
+          status: 500,
+        });
+      }
+    } else {
+      response.errors.push({
+        detail: 'Given attributes were invalid or incomplete. Failed to get!',
+        status: 500,
+      });
+    }
+
+    return response;
+  }
+
+  @Post('getShortenedUrlsByAccount')
+  async getShortenedUrlsByAccount(
+    @Body() request: GetShortenedUrlsByAccountRequest
+  ): Promise<GetShortenedUrlsByAccountResponse> {
+    const response: GetShortenedUrlsByAccountResponse = {
+      data: {
+        type: 'shortenedUrl',
+        id: -1,
+        attributes: {
+          shortenedUrls: [],
+        },
+      },
+      errors: [],
+    };
+
+    if (request && request.data.attributes?.account_id) {
+      try {
+        const db = new PrismaClient();
+
+        const shortenedUrls = await db.shortened_url.findMany({
+          where: {
+            account_id: request.data.attributes.account_id,
+          },
+        });
+
+        db.$disconnect();
+
+        if (shortenedUrls && shortenedUrls.length > 0) {
+          shortenedUrls.forEach((s) => {
+            response.data.attributes.shortenedUrls.push({
+              id: s.id,
+              alias: s.alias,
+              url: s.url,
+              visits: s.visits,
+              updated_at: s.updated_at,
+            });
+          });
+        } else {
+          response.errors.push({
+            detail:
+              'Shortened URLs not found with given attributes. Failed to get!',
             status: 404,
           });
         }

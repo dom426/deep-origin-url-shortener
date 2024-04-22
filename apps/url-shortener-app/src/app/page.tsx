@@ -8,6 +8,7 @@ import {
   CreateShortenedUrlResponse,
 } from '@url-shortener/url-shortener-models';
 import Logo from '../components/logo/logo';
+import Cookies from 'js-cookie';
 
 export default function Index() {
   const [originalUrl, setOriginalUrl] = useState('');
@@ -35,13 +36,10 @@ export default function Index() {
           attributes: {
             alias: generateAlias(),
             url: originalUrl,
+            account_id: parseInt(Cookies.get('account_id')?.toString() ?? '-1'),
           },
         },
       };
-
-      const x = await fetch('/api/test');
-      console.log(x);
-      return;
 
       fetch('/api/createShortenedUrl', {
         method: 'POST',
@@ -51,13 +49,11 @@ export default function Index() {
         body: JSON.stringify(request),
       })
         .then(async (res) => {
-          console.log(res);
           const json = await res.json();
-          console.log(json);
           const finalResponse = json as CreateShortenedUrlResponse;
-          console.log(finalResponse);
-
+          console.log('TESTING');
           if (finalResponse.errors && finalResponse.errors.length > 0) {
+            console.log(finalResponse);
             setDisplayError(finalResponse.errors[0].detail);
           } else if (
             !finalResponse.data.attributes?.url ||
@@ -65,10 +61,14 @@ export default function Index() {
           ) {
             setDisplayError('Incomplete data was stored!');
           } else {
+            console.log('TESTING 2');
             setOriginalUrl(finalResponse.data.attributes?.url);
+            console.log('TESTING 3');
             setShortenedUrl(
-              'localhost:3000/' + finalResponse.data.attributes?.alias
+              process.env.CLIENT_HOST ??
+                'localhost:5000' + '/' + finalResponse.data.attributes?.alias
             );
+            console.log('TESTING 4');
           }
         })
         .finally(() => setIsLoading(false));

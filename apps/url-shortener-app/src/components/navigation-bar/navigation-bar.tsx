@@ -3,22 +3,26 @@
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import Logo from '../logo/logo';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import styles from './navigation-bar.module.css';
 
 export default function NavigationBar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const isLoggedIn = Cookies.get('token') === 'yes';
     setIsLoggedIn(isLoggedIn);
-  }, []);
+  }, [pathname]);
 
   const onLogout = () => {
-    Cookies.set('token', 'no');
+    Cookies.remove('token');
+    Cookies.remove('username');
+    Cookies.remove('account_id');
     setIsLoggedIn(false);
+    router.push('/');
   };
 
   return (

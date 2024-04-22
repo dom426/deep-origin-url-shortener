@@ -5,6 +5,7 @@ export const metadata = {
   title: 'URLittle',
   description: 'Developed by Dominick Alfonso',
 };
+
 export default function RootLayout({
   children,
 }: {

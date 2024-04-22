@@ -36,15 +36,7 @@ export default function Login() {
         },
       };
 
-      //TODO: TEMPORARY TESTING
-      console.log('LOGGING IN');
-      console.log(request);
-      router.push('/dashboard');
-      Cookies.set('token', 'yes');
-      Cookies.set('username', username);
-      return;
-
-      fetch('/api/login', {
+      fetch('api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -52,17 +44,17 @@ export default function Login() {
         body: JSON.stringify(request),
       })
         .then(async (res) => {
-          console.log(res);
           const json = await res.json();
-          console.log(json);
           const finalResponse = json as LoginResponse;
-          console.log(finalResponse);
 
           if (finalResponse.errors && finalResponse.errors.length > 0) {
             setDisplayError(finalResponse.errors[0].detail);
           } else if (!finalResponse.data.id) {
             setDisplayError('User was not found with given credentials!');
           } else {
+            Cookies.set('token', 'yes');
+            Cookies.set('username', username);
+            Cookies.set('account_id', finalResponse.data.id.toString());
             router.push('/dashboard');
           }
         })

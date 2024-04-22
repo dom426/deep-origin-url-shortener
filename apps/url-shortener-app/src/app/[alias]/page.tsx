@@ -27,21 +27,15 @@ export default function Alias({ params }: { params: { alias: string } }) {
       },
     };
 
-    fetch(
-      'http://localhost:' + process.env.PORT + '/api/getShortenedUrlByAlias',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/vnd.api+json',
-        },
-        body: JSON.stringify(request),
-      }
-    ).then(async (res) => {
-      console.log(res);
+    fetch('api/getShortenedUrlByAlias', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/vnd.api+json',
+      },
+      body: JSON.stringify(request),
+    }).then(async (res) => {
       const json = await res.json();
-      console.log(json);
       const finalResponse = json as GetShortenedUrlByAliasResponse;
-      console.log(finalResponse);
 
       if (finalResponse.errors && finalResponse.errors.length > 0) {
         setDisplayError(finalResponse.errors[0].detail);

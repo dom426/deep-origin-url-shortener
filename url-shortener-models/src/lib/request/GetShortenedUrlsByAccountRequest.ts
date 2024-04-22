@@ -5,11 +5,9 @@ const schema = z.object({
     type: z.string(),
     id: z.number().optional(),
     attributes: z.object({
-      alias: z.string(),
-      url: z.string(),
-      account_id: z.number().optional(),
+      account_id: z.number(),
     }),
   }),
 });
 
-export type CreateShortenedUrlRequest = z.infer<typeof schema>;
+export type GetShortenedUrlsByAccountRequest = z.infer<typeof schema>;

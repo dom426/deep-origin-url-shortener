@@ -13,6 +13,7 @@
   margin: 0 10px;
   font-weight: bold;
   color: black;
+  cursor: pointer;
 }
 .navbarMenuItem:hover {
   text-decoration: solid underline #d1ca98 5px;

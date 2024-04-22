@@ -34,7 +34,7 @@ export default function CreateAccount() {
         },
       };
 
-      fetch('https://fr9v5qx1-3001.use2.devtunnels.ms/api/createAccount', {
+      fetch('api/createAccount', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -42,11 +42,8 @@ export default function CreateAccount() {
         body: JSON.stringify(request),
       })
         .then(async (res) => {
-          console.log(res);
           const json = await res.json();
-          console.log(json);
           const finalResponse = json as CreateAccountResponse;
-          console.log(finalResponse);
 
           if (finalResponse.errors && finalResponse.errors.length > 0) {
             setDisplayError(finalResponse.errors[0].detail);
