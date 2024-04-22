@@ -87,7 +87,9 @@ export default function Login() {
           {isLoading ? 'Logging In...' : 'Login'}
         </button>
       </form>
-      {displayError && <div>{displayError}</div>}
+      {displayError && (
+        <div className={styles.errorMessage}>{displayError}</div>
+      )}
     </div>
   );
 }

@@ -95,11 +95,15 @@ export default function Alias({ params }: { params: { alias: string } }) {
 
   return (
     <section className={styles['container']}>
-      {isNotFound && <h1>404!</h1>}
+      {isNotFound && (
+        <a href={'/'} className={styles.errorContainer}>
+          <div className={styles.errorCode}>404</div>
+          <div className={styles.errorMessage}>{displayError}</div>
+        </a>
+      )}
       {!isNotFound && (
         <h1>Wait a moment while we take you to {originalUrl} ...</h1>
       )}
-      <h1>{displayError}</h1>
     </section>
   );
 }

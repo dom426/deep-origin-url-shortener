@@ -16,10 +16,16 @@ import {
   UpdateShortenedUrlResponse,
 } from '@url-shortener/url-shortener-models';
 import { PrismaClient, shortened_url } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private prisma: PrismaService
+  ) {}
+
+  db = new PrismaClient();
 
   @Post('login')
   async login(@Body() req: Request): Promise<LoginResponse> {
@@ -44,16 +50,12 @@ export class AppController {
       const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 
       try {
-        const db = new PrismaClient();
-
-        const account = await db.account.findFirst({
+        const account = await this.prisma.account.findFirst({
           where: {
             username: request.data.attributes.username,
             password: hashed,
           },
         });
-
-        db.$disconnect();
 
         if (account && account.id >= 0) {
           response.data.id = account.id;
@@ -105,9 +107,7 @@ export class AppController {
       const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 
       try {
-        const db = new PrismaClient();
-
-        const account = await db.account.create({
+        const account = await this.prisma.account.create({
           data: {
             username: request.data.attributes.username,
             password: hashed,
@@ -115,8 +115,6 @@ export class AppController {
             updated_at: new Date(),
           },
         });
-
-        db.$disconnect();
 
         if (account && account.id >= 0) {
           response.data.id = account.id;
@@ -164,11 +162,9 @@ export class AppController {
       request.data.attributes?.url
     ) {
       try {
-        const db = new PrismaClient();
-
         let shortenedUrl: shortened_url;
         if (request.data.attributes.account_id) {
-          shortenedUrl = await db.shortened_url.create({
+          shortenedUrl = await this.prisma.shortened_url.create({
             data: {
               alias: request.data.attributes.alias,
               url: request.data.attributes.url,
@@ -181,7 +177,7 @@ export class AppController {
             },
           });
         } else {
-          shortenedUrl = await db.shortened_url.create({
+          shortenedUrl = await this.prisma.shortened_url.create({
             data: {
               alias: request.data.attributes.alias,
               url: request.data.attributes.url,
@@ -190,8 +186,6 @@ export class AppController {
             },
           });
         }
-
-        db.$disconnect();
 
         if (shortenedUrl && shortenedUrl.id >= 0) {
           response.data.id = shortenedUrl.id;
@@ -236,9 +230,7 @@ export class AppController {
 
     if (request && request.data.id) {
       try {
-        const db = new PrismaClient();
-
-        const shortenedUrl = await db.shortened_url.update({
+        const shortenedUrl = await this.prisma.shortened_url.update({
           where: {
             id: request.data.id,
           },
@@ -249,8 +241,6 @@ export class AppController {
             updated_at: new Date(),
           },
         });
-
-        db.$disconnect();
 
         if (shortenedUrl && shortenedUrl.id >= 0) {
           response.data.id = shortenedUrl.id;
@@ -296,15 +286,11 @@ export class AppController {
 
     if (request && request.data.attributes?.alias) {
       try {
-        const db = new PrismaClient();
-
-        const shortenedUrl = await db.shortened_url.findFirst({
+        const shortenedUrl = await this.prisma.shortened_url.findFirst({
           where: {
             alias: request.data.attributes.alias,
           },
         });
-
-        db.$disconnect();
 
         if (shortenedUrl && shortenedUrl.id >= 0) {
           response.data.id = shortenedUrl.id;
@@ -351,15 +337,11 @@ export class AppController {
 
     if (request && request.data.attributes?.account_id) {
       try {
-        const db = new PrismaClient();
-
-        const shortenedUrls = await db.shortened_url.findMany({
+        const shortenedUrls = await this.prisma.shortened_url.findMany({
           where: {
             account_id: request.data.attributes.account_id,
           },
         });
-
-        db.$disconnect();
 
         if (shortenedUrls && shortenedUrls.length > 0) {
           shortenedUrls.forEach((s) => {

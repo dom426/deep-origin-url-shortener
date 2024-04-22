@@ -62,7 +62,11 @@ export default function Index() {
           } else {
             setOriginalUrl(finalResponse.data.attributes?.url);
             setShortenedUrl(
-              'http://localhost:5000/' + finalResponse.data.attributes?.alias
+              process.env.URL_SHORTENER_APP_HOST
+                ? process.env.URL_SHORTENER_APP_HOST
+                : 'http://localhost:5000' +
+                    '/' +
+                    finalResponse.data.attributes?.alias
             );
           }
         })
@@ -103,7 +107,9 @@ export default function Index() {
             Success! Here&apos;s your short URL:
           </div>
           <div className={styles.copyContainer}>
-            <a href={shortenedUrl}>{shortenedUrl}</a>
+            <a target="_blank" href={shortenedUrl}>
+              {shortenedUrl}
+            </a>
             <button
               className={styles.copyButton}
               onClick={() => onCopy(shortenedUrl)}

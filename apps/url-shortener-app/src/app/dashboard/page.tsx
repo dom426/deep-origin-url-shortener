@@ -135,17 +135,46 @@ export default function Dashboard() {
           e.stopPropagation();
           const shortenedUrl = shortenedUrls.find((s) => s.id === params.id);
           if (shortenedUrl) {
-            onCopy('http://localhost:5000/' + shortenedUrl.alias);
+            onCopy(
+              process.env.URL_SHORTENER_APP_HOST
+                ? process.env.URL_SHORTENER_APP_HOST
+                : 'http://localhost:5000' + '/' + shortenedUrl.alias
+            );
           }
         };
         return <Button onClick={onCopyRow}>Copy</Button>;
+      },
+    },
+    {
+      field: 'goto',
+      headerName: 'Go To',
+      sortable: false,
+      renderCell: (params: GridCellParams) => {
+        const onGoTo = (e: any) => {
+          e.stopPropagation();
+          const shortenedUrl = shortenedUrls.find((s) => s.id === params.id);
+          if (shortenedUrl) {
+            window.open(
+              process.env.URL_SHORTENER_APP_HOST
+                ? process.env.URL_SHORTENER_APP_HOST
+                : 'http://localhost:5000' + '/' + shortenedUrl.alias,
+              '_blank'
+            );
+          }
+        };
+        return <Button onClick={onGoTo}>Go To</Button>;
       },
     },
   ];
 
   return (
     <div className={styles.page}>
-      {isLoggedIn && <div>Welcome, {username}!</div>}
+      {isLoggedIn && (
+        <div className={styles.welcomeMessage}>Welcome, {username}!</div>
+      )}
+      {displayError && (
+        <div className={styles.errorMessage}>{displayError}</div>
+      )}
       <div className={styles.dashboard}>
         <DataGrid
           loading={isLoading}
@@ -154,7 +183,6 @@ export default function Dashboard() {
           processRowUpdate={(u, r) => onUpdateRow(u)}
         />
       </div>
-      {displayError && <div>{displayError}!</div>}
     </div>
   );
 }

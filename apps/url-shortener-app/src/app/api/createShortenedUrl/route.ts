@@ -1,7 +1,9 @@
 export async function POST(req: Request) {
   const request = await req.json();
   const response = await fetch(
-    process.env.API_HOST ?? 'http://localhost:3000' + '/api/createShortenedUrl',
+    process.env.URL_SHORTENER_SERVER_HOST
+      ? process.env.URL_SHORTENER_SERVER_HOST
+      : 'http://localhost:3000' + '/api/createShortenedUrl',
     {
       method: 'POST',
       headers: {

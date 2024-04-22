@@ -82,7 +82,9 @@ export default function CreateAccount() {
           {isLoading ? 'Submitting...' : 'Create Account'}
         </button>
       </form>
-      {displayError && <div>{displayError}</div>}
+      {displayError && (
+        <div className={styles.errorMessage}>{displayError}</div>
+      )}
     </div>
   );
 }
