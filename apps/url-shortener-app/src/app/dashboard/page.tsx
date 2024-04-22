@@ -9,7 +9,6 @@ import {
   GetShortenedUrlsByAccountResponse,
   UpdateShortenedUrlRequest,
 } from '@url-shortener/url-shortener-models';
-import { Button } from '@mui/material';
 import { onCopy } from '../../utils';
 
 type shortenedUrl = {
@@ -131,8 +130,7 @@ export default function Dashboard() {
       headerName: 'Copy',
       sortable: false,
       renderCell: (params: GridCellParams) => {
-        const onCopyRow = (e: any) => {
-          e.stopPropagation();
+        const onCopyRow = () => {
           const shortenedUrl = shortenedUrls.find((s) => s.id === params.id);
           if (shortenedUrl) {
             onCopy(
@@ -142,16 +140,15 @@ export default function Dashboard() {
             );
           }
         };
-        return <Button onClick={onCopyRow}>Copy</Button>;
+        return <button onClick={onCopyRow}>Copy</button>;
       },
     },
     {
-      field: 'goto',
-      headerName: 'Go To',
+      field: 'go',
+      headerName: 'Go',
       sortable: false,
       renderCell: (params: GridCellParams) => {
-        const onGoTo = (e: any) => {
-          e.stopPropagation();
+        const onGoTo = () => {
           const shortenedUrl = shortenedUrls.find((s) => s.id === params.id);
           if (shortenedUrl) {
             window.open(
@@ -162,7 +159,7 @@ export default function Dashboard() {
             );
           }
         };
-        return <Button onClick={onGoTo}>Go To</Button>;
+        return <button onClick={onGoTo}>Go</button>;
       },
     },
   ];

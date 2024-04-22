@@ -335,7 +335,7 @@ export class AppController {
       errors: [],
     };
 
-    if (request && request.data.attributes?.account_id) {
+    if (request && request.data.attributes?.account_id >= 0) {
       try {
         const shortenedUrls = await this.prisma.shortened_url.findMany({
           where: {
@@ -343,7 +343,7 @@ export class AppController {
           },
         });
 
-        if (shortenedUrls && shortenedUrls.length > 0) {
+        if (shortenedUrls) {
           shortenedUrls.forEach((s) => {
             response.data.attributes.shortenedUrls.push({
               id: s.id,
@@ -352,12 +352,6 @@ export class AppController {
               visits: s.visits,
               updated_at: s.updated_at,
             });
-          });
-        } else {
-          response.errors.push({
-            detail:
-              'Shortened URLs not found with given attributes. Failed to get!',
-            status: 404,
           });
         }
       } catch (ex) {

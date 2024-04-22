@@ -74,6 +74,7 @@ input {
   border-radius: 0.3rem;
   box-sizing: border-box;
   border: 2px solid #d1ca98;
+  margin: 3px 0;
 }
 button {
   height: 40px;
