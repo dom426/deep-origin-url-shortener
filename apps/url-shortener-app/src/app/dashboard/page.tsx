@@ -2,12 +2,15 @@
 
 import styles from './page.module.css';
 import Cookies from 'js-cookie';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
 import { useEffect, useState } from 'react';
 import {
   GetShortenedUrlsByAccountRequest,
   GetShortenedUrlsByAccountResponse,
+  UpdateShortenedUrlRequest,
 } from '@url-shortener/url-shortener-models';
+import { Button } from '@mui/material';
+import { onCopy } from '../../utils';
 
 type shortenedUrl = {
   id: number;
@@ -30,20 +33,22 @@ export default function Dashboard() {
     getShortenedUrls();
   }, []);
 
-  async function getShortenedUrls() {
+  async function onUpdateRow(updatedRow: shortenedUrl) {
     setIsLoading(true);
 
-    const request: GetShortenedUrlsByAccountRequest = {
+    const request: UpdateShortenedUrlRequest = {
       data: {
         type: 'shortenedUrl',
-        id: -1,
+        id: updatedRow.id,
         attributes: {
-          account_id: parseInt(Cookies.get('account_id')?.toString() ?? '-1'),
+          url: updatedRow.url,
+          alias: updatedRow.alias,
+          visits: updatedRow.visits,
         },
       },
     };
 
-    fetch('api/getShortenedUrlsByAccount', {
+    fetch('api/updateShortenedUrl', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/vnd.api+json',
@@ -56,35 +61,98 @@ export default function Dashboard() {
 
         if (finalResponse.errors && finalResponse.errors.length > 0) {
           setDisplayError(finalResponse.errors[0].detail);
-        } else {
-          const shortenedUrls: shortenedUrl[] = [];
-          finalResponse.data.attributes?.shortenedUrls?.forEach((s) => {
-            shortenedUrls.push({
-              alias: s.alias,
-              url: s.url,
-              visits: s.visits,
-              updated_at: s.updated_at.toDateString(),
-              id: s.id,
-            });
-          });
-          setShortenedUrls(shortenedUrls);
         }
       })
       .finally(() => setIsLoading(false));
   }
 
+  async function getShortenedUrls() {
+    setIsLoading(true);
+
+    const accountId = Cookies.get('account_id')?.toString();
+
+    if (accountId) {
+      const request: GetShortenedUrlsByAccountRequest = {
+        data: {
+          type: 'shortenedUrl',
+          id: -1,
+          attributes: {
+            account_id: parseInt(accountId ?? '-1'),
+          },
+        },
+      };
+
+      fetch('api/getShortenedUrlsByAccount', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+        },
+        body: JSON.stringify(request),
+      })
+        .then(async (res) => {
+          const json = await res.json();
+          const finalResponse = json as GetShortenedUrlsByAccountResponse;
+
+          if (finalResponse.errors && finalResponse.errors.length > 0) {
+            setDisplayError(finalResponse.errors[0].detail);
+          } else {
+            const shortenedUrls: shortenedUrl[] = [];
+            finalResponse.data.attributes?.shortenedUrls?.forEach((s) => {
+              shortenedUrls.push({
+                alias: s.alias,
+                url: s.url,
+                visits: s.visits,
+                updated_at: new Date(s.updated_at).toLocaleString(),
+                id: s.id,
+              });
+            });
+            setShortenedUrls(shortenedUrls);
+          }
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setDisplayError('User not logged in!');
+      setIsLoading(false);
+    }
+  }
+
   const columns: GridColDef[] = [
+    {
+      field: 'alias',
+      headerName: 'Alias',
+      width: 100,
+      editable: true,
+    },
     { field: 'url', headerName: 'Original Url', width: 300 },
-    { field: 'alias', headerName: 'Alias', width: 100 },
     { field: 'visits', headerName: 'Visits', width: 100 },
     { field: 'updated_at', headerName: 'Last Updated', width: 200 },
+    {
+      field: 'copy',
+      headerName: 'Copy',
+      sortable: false,
+      renderCell: (params: GridCellParams) => {
+        const onCopyRow = (e: any) => {
+          e.stopPropagation();
+          const shortenedUrl = shortenedUrls.find((s) => s.id === params.id);
+          if (shortenedUrl) {
+            onCopy('http://localhost:5000/' + shortenedUrl.alias);
+          }
+        };
+        return <Button onClick={onCopyRow}>Copy</Button>;
+      },
+    },
   ];
 
   return (
     <div className={styles.page}>
       {isLoggedIn && <div>Welcome, {username}!</div>}
       <div className={styles.dashboard}>
-        <DataGrid loading={isLoading} rows={shortenedUrls} columns={columns} />
+        <DataGrid
+          loading={isLoading}
+          rows={shortenedUrls}
+          columns={columns}
+          processRowUpdate={(u, r) => onUpdateRow(u)}
+        />
       </div>
       {displayError && <div>{displayError}!</div>}
     </div>

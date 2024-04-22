@@ -51,9 +51,8 @@ export default function Index() {
         .then(async (res) => {
           const json = await res.json();
           const finalResponse = json as CreateShortenedUrlResponse;
-          console.log('TESTING');
+
           if (finalResponse.errors && finalResponse.errors.length > 0) {
-            console.log(finalResponse);
             setDisplayError(finalResponse.errors[0].detail);
           } else if (
             !finalResponse.data.attributes?.url ||
@@ -61,14 +60,10 @@ export default function Index() {
           ) {
             setDisplayError('Incomplete data was stored!');
           } else {
-            console.log('TESTING 2');
             setOriginalUrl(finalResponse.data.attributes?.url);
-            console.log('TESTING 3');
             setShortenedUrl(
-              process.env.CLIENT_HOST ??
-                'localhost:5000' + '/' + finalResponse.data.attributes?.alias
+              'http://localhost:5000/' + finalResponse.data.attributes?.alias
             );
-            console.log('TESTING 4');
           }
         })
         .finally(() => setIsLoading(false));
@@ -103,13 +98,18 @@ export default function Index() {
       )}
 
       {shortenedUrl && (
-        <div>
-          <div>Success! Here&apos;s your short URL:</div>
-          <div>
+        <div className={styles.successContainer}>
+          <div className={styles.successMessage}>
+            Success! Here&apos;s your short URL:
+          </div>
+          <div className={styles.copyContainer}>
             <a href={shortenedUrl}>{shortenedUrl}</a>
-            <div onClick={() => onCopy(shortenedUrl)}>
-              <span>Copy</span>
-            </div>
+            <button
+              className={styles.copyButton}
+              onClick={() => onCopy(shortenedUrl)}
+            >
+              Copy
+            </button>
           </div>
         </div>
       )}

@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-
+import { Body, Controller, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 import bcrypt from 'bcrypt';
 import {
@@ -16,16 +15,11 @@ import {
   UpdateShortenedUrlRequest,
   UpdateShortenedUrlResponse,
 } from '@url-shortener/url-shortener-models';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, shortened_url } from '@prisma/client';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-
-  @Get('test')
-  test() {
-    return 'Hello!';
-  }
 
   @Post('login')
   async login(@Body() req: Request): Promise<LoginResponse> {
@@ -163,7 +157,6 @@ export class AppController {
       },
       errors: [],
     };
-    console.log(request);
 
     if (
       request &&
@@ -171,27 +164,35 @@ export class AppController {
       request.data.attributes?.url
     ) {
       try {
-        console.log('STESTING');
         const db = new PrismaClient();
 
-        console.log('STESTING 2: ' + request.data.attributes.account_id);
-        const shortenedUrl = await db.shortened_url.create({
-          data: {
-            alias: request.data.attributes.alias,
-            url: request.data.attributes.url,
-            created_at: new Date(),
-            updated_at: new Date(),
-            account_id:
-              request.data.attributes.account_id >= 0
-                ? request.data.attributes.account_id
-                : undefined,
-          },
-        });
+        let shortenedUrl: shortened_url;
+        if (request.data.attributes.account_id) {
+          shortenedUrl = await db.shortened_url.create({
+            data: {
+              alias: request.data.attributes.alias,
+              url: request.data.attributes.url,
+              created_at: new Date(),
+              updated_at: new Date(),
+              account_id:
+                request.data.attributes.account_id >= 0
+                  ? request.data.attributes.account_id
+                  : undefined,
+            },
+          });
+        } else {
+          shortenedUrl = await db.shortened_url.create({
+            data: {
+              alias: request.data.attributes.alias,
+              url: request.data.attributes.url,
+              created_at: new Date(),
+              updated_at: new Date(),
+            },
+          });
+        }
 
-        console.log('STESTING 3');
         db.$disconnect();
 
-        console.log('STESTING 4');
         if (shortenedUrl && shortenedUrl.id >= 0) {
           response.data.id = shortenedUrl.id;
           response.data.attributes.alias = shortenedUrl.alias;
@@ -242,9 +243,9 @@ export class AppController {
             id: request.data.id,
           },
           data: {
-            url: request.data.attributes.url,
-            alias: request.data.attributes.alias,
-            visits: request.data.attributes.visits,
+            url: request.data.attributes?.url,
+            alias: request.data.attributes?.alias,
+            visits: request.data.attributes?.visits,
             updated_at: new Date(),
           },
         });
@@ -309,6 +310,7 @@ export class AppController {
           response.data.id = shortenedUrl.id;
           response.data.attributes.alias = shortenedUrl.alias;
           response.data.attributes.url = shortenedUrl.url;
+          response.data.attributes.visits = shortenedUrl.visits;
         } else {
           response.errors.push({
             detail:

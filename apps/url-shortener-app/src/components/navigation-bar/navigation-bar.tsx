@@ -32,6 +32,14 @@ export default function NavigationBar() {
         <span className={styles.logoSubText}>The best in URL shortening!</span>
       </div>
       <div className={styles.navbarMenu}>
+        <a
+          className={`${styles.navbarMenuItem} ${
+            pathname === '/' ? styles.active : ''
+          }`}
+          href="/"
+        >
+          Shorten
+        </a>
         {isLoggedIn && (
           <a
             className={`${styles.navbarMenuItem} ${

@@ -14,7 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <NavigationBar />
+        <div className="topBar">
+          <NavigationBar />
+        </div>
         <main className="main">{children}</main>
       </body>
     </html>

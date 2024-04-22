@@ -11,3 +11,21 @@
   color: red;
   font-weight: bold;
 }
+
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  margin-top: 45px;
+}
+.successMessage {
+  font-weight: bold;
+  font-size: 18px;
+}
+.copyContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.copyButton {
+  margin-left: 10px;
+}
