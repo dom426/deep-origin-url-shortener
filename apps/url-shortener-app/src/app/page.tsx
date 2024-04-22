@@ -7,7 +7,7 @@ import {
   CreateShortenedUrlRequest,
   CreateShortenedUrlResponse,
 } from '@url-shortener/url-shortener-models';
-import Logo from '../components/logo';
+import Logo from '../components/logo/logo';
 
 export default function Index() {
   const [originalUrl, setOriginalUrl] = useState('');
@@ -39,9 +39,12 @@ export default function Index() {
         },
       };
 
-      fetch('http://localhost:3000/api/createShortenedUrl', {
+      const x = await fetch('/api/test');
+      console.log(x);
+      return;
+
+      fetch('/api/createShortenedUrl', {
         method: 'POST',
-        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/vnd.api+json',
         },

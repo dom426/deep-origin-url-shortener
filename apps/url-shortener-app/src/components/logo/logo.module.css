@@ -1,9 +1,3 @@
-.logoContainer {
-  display: flex;
-  align-self: start;
-  padding: 5px;
-}
-
 .logoImage {
   vertical-align: middle;
   height: 25px;

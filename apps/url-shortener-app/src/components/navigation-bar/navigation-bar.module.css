@@ -1,0 +1,36 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 10px solid #809848;
+  background-color: white;
+  padding: 10px;
+}
+.navbarMenu {
+  display: flex;
+}
+.navbarMenuItem {
+  padding: 5px;
+  margin: 0 10px;
+  font-weight: bold;
+  color: black;
+}
+.navbarMenuItem:hover {
+  text-decoration: solid underline #d1ca98 5px;
+}
+.active {
+  text-decoration: solid underline #d1ca98 5px;
+}
+
+.logoContainer {
+  display: flex;
+  align-self: start;
+  padding: 5px;
+}
+
+.logoSubText {
+  font-size: 14px;
+  color: #000009;
+  vertical-align: middle;
+  margin-top: 4px;
+  margin-left: 10px;
+}

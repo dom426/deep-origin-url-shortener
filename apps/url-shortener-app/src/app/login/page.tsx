@@ -6,11 +6,15 @@ import {
   LoginRequest,
   LoginResponse,
 } from '@url-shortener/url-shortener-models';
-import Logo from '../../components/logo';
+import Logo from '../../components/logo/logo';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function Login() {
   const [displayError, setDisplayError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const router = useRouter();
 
   const onLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,10 +36,15 @@ export default function Login() {
         },
       };
 
+      //TODO: TEMPORARY TESTING
       console.log('LOGGING IN');
       console.log(request);
+      router.push('/dashboard');
+      Cookies.set('token', 'yes');
+      Cookies.set('username', username);
+      return;
 
-      fetch('http://localhost:3001/api/login', {
+      fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -54,7 +63,7 @@ export default function Login() {
           } else if (!finalResponse.data.id) {
             setDisplayError('User was not found with given credentials!');
           } else {
-            //redirect to dashboard
+            router.push('/dashboard');
           }
         })
         .finally(() => setIsLoading(false));

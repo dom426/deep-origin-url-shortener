@@ -6,10 +6,13 @@ import {
   CreateAccountRequest,
   CreateAccountResponse,
 } from '@url-shortener/url-shortener-models';
+import Logo from '../../components/logo/logo';
+import { useRouter } from 'next/navigation';
 
 export default function CreateAccount() {
   const [displayError, setDisplayError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const onCreateAccount = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -50,7 +53,7 @@ export default function CreateAccount() {
           } else if (!finalResponse.data.id) {
             setDisplayError('User was not created with given credentials!');
           } else {
-            //redirect to login
+            router.push('/login');
           }
         })
         .finally(() => setIsLoading(false));
@@ -62,15 +65,22 @@ export default function CreateAccount() {
 
   return (
     <div className={styles.page}>
-      <form onSubmit={onCreateAccount}>
-        <div>
-          <label>Username</label>
-          <input type="text" required={true} name="username" />
-        </div>
-        <div>
-          <label>Password</label>
-          <input type="password" required={true} name="password" />
-        </div>
+      <div className={styles.logo}>
+        <Logo isBig={true} />
+      </div>
+      <form className={styles.form} onSubmit={onCreateAccount}>
+        <input
+          type="text"
+          required={true}
+          name="username"
+          placeholder="Username"
+        />
+        <input
+          type="password"
+          required={true}
+          name="password"
+          placeholder="Password"
+        />
         <button type="submit" disabled={isLoading}>
           {isLoading ? 'Submitting...' : 'Create Account'}
         </button>
