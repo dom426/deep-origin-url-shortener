@@ -6,6 +6,7 @@ import {
   LoginRequest,
   LoginResponse,
 } from '@url-shortener/url-shortener-models';
+import Logo from '../../components/logo';
 
 export default function Login() {
   const [displayError, setDisplayError] = useState('');
@@ -31,7 +32,10 @@ export default function Login() {
         },
       };
 
-      fetch('http://localhost:3001/login', {
+      console.log('LOGGING IN');
+      console.log(request);
+
+      fetch('http://localhost:3001/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -62,15 +66,22 @@ export default function Login() {
 
   return (
     <div className={styles.page}>
-      <form onSubmit={onLogin}>
-        <div>
-          <label>Username</label>
-          <input type="text" required={true} name="username" />
-        </div>
-        <div>
-          <label>Password</label>
-          <input type="password" required={true} name="password" />
-        </div>
+      <div className={styles.logo}>
+        <Logo isBig={true} />
+      </div>
+      <form className={styles.form} onSubmit={onLogin}>
+        <input
+          type="text"
+          required={true}
+          name="username"
+          placeholder="Username"
+        />
+        <input
+          type="password"
+          required={true}
+          name="password"
+          placeholder="Password"
+        />
         <button type="submit" disabled={isLoading}>
           {isLoading ? 'Logging In...' : 'Login'}
         </button>

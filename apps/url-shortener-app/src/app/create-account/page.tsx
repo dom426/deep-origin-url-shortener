@@ -31,7 +31,7 @@ export default function CreateAccount() {
         },
       };
 
-      fetch('http://localhost:3001/login', {
+      fetch('https://fr9v5qx1-3001.use2.devtunnels.ms/api/createAccount', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/vnd.api+json',

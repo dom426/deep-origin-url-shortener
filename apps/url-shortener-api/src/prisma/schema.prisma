@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id             Int             @id @default(autoincrement())
+  created_at     DateTime        @db.Timestamptz(6)
+  updated_at     DateTime        @db.Timestamptz(6)
+  username       String          @db.VarChar(255)
+  password       String          @db.VarChar(255)
+  last_logged_in DateTime?       @db.Timestamptz(6)
+  shortened_url  shortened_url[]
+}
+
+model shortened_url {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @db.Timestamptz(6)
+  updated_at DateTime @db.Timestamptz(6)
+  url        String   @db.VarChar(255)
+  alias      String   @unique(map: "shortened_url_alias_unique") @db.VarChar(255)
+  visits     Int      @default(0)
+  account_id Int?
+  account    account? @relation(fields: [account_id], references: [id], map: "shortened_url_account_id_foreign")
+}

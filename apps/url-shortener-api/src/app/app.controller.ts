@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 
 import { AppService } from './app.service';
 import bcrypt from 'bcrypt';
@@ -14,22 +14,25 @@ import {
   UpdateShortenedUrlRequest,
   UpdateShortenedUrlResponse,
 } from '@url-shortener/url-shortener-models';
-import { initORM } from '../database/orm';
-import { Account } from '../database/entities/Account.entity';
-import { ShortenedUrl } from '../database/entities/ShortenedUrl.entity';
+import { PrismaClient } from '@prisma/client';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Get('test')
+  test() {
+    return 'Hello!';
+  }
+
   @Post('login')
-  async login(req: Request): Promise<LoginResponse> {
-    const request = (await req.json()) as LoginRequest;
+  async login(@Body() request: LoginRequest): Promise<LoginResponse> {
     const response: LoginResponse = {
       data: {
         type: 'account',
         id: -1,
       },
+      errors: [],
     };
 
     if (
@@ -37,27 +40,39 @@ export class AppController {
       request.data.attributes?.username &&
       request.data.attributes?.password
     ) {
-      // spin up connection to the DB and find entity based on given attributes
-      const db = await initORM();
+      const salt = process.env.SALT_KEY
+        ? process.env.SALT_KEY
+        : '$2b$10$6oz8mt.oghlocUsl4efRzO';
+      const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 
-      const account = await db.em.findOne(Account, {
-        username: request.data.attributes.username,
-        password: await bcrypt.hash(
-          request.data.attributes.password,
-          process.env.SALT_KEY ?? '$2b$31$57miCrduVDFHAovsUv7mPO'
-        ),
-      });
+      try {
+        const db = new PrismaClient();
 
-      if (account && account.id >= 0) {
-        response.data.id = account.id;
-      } else {
+        const account = await db.account.findFirst({
+          where: {
+            username: request.data.attributes.username,
+            password: hashed,
+          },
+        });
+
+        db.$disconnect();
+
+        if (account && account.id >= 0) {
+          response.data.id = account.id;
+        } else {
+          response.errors.push({
+            detail:
+              'Account not found with given credentials. Failed to find account!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
         response.errors.push({
-          detail: 'Account not found with given credentials. Failed to login!',
-          status: 404,
+          detail:
+            'Shortened URL not found with given attributes. Failed to login!',
+          status: 500,
         });
       }
-
-      return response;
     } else {
       response.errors.push({
         detail:
@@ -70,13 +85,15 @@ export class AppController {
   }
 
   @Post('createAccount')
-  async create(req: Request): Promise<CreateAccountResponse> {
-    const request = (await req.json()) as CreateAccountRequest;
+  async create(
+    @Body() request: CreateAccountRequest
+  ): Promise<CreateAccountResponse> {
     const response: CreateAccountResponse = {
       data: {
         type: 'account',
         id: -1,
       },
+      errors: [],
     };
 
     if (
@@ -84,29 +101,41 @@ export class AppController {
       request.data.attributes?.username &&
       request.data.attributes?.password
     ) {
-      const db = await initORM();
+      const salt = process.env.SALT_KEY
+        ? process.env.SALT_KEY
+        : '$2b$10$6oz8mt.oghlocUsl4efRzO';
+      const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 
-      const hashed = await bcrypt.hash(
-        request.data.attributes.password,
-        process.env.SALT_KEY ?? '$2b$31$57miCrduVDFHAovsUv7mPO'
-      );
+      try {
+        const db = new PrismaClient();
 
-      const account = new Account();
-      account.username = request.data.attributes.username;
-      account.password = hashed;
-      await db.em.persistAndFlush(account);
+        const account = await db.account.create({
+          data: {
+            username: request.data.attributes.username,
+            password: hashed,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        });
 
-      if (account && account.id >= 0) {
-        response.data.id = account.id;
-      } else {
+        db.$disconnect();
+
+        if (account && account.id >= 0) {
+          response.data.id = account.id;
+        } else {
+          response.errors.push({
+            detail:
+              'Account not created with given credentials. Failed to create account!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
         response.errors.push({
           detail:
-            'Account not created with given credentials. Failed to create account!',
-          status: 404,
+            'Shortened URL not created with given attributes. Failed to create!',
+          status: 500,
         });
       }
-
-      return response;
     } else {
       response.errors.push({
         detail:
@@ -119,13 +148,18 @@ export class AppController {
   }
 
   @Post('createShortenedUrl')
-  async createShortenedUrl(req: Request): Promise<CreateShortenedUrlResponse> {
-    const request = (await req.json()) as CreateShortenedUrlRequest;
+  async createShortenedUrl(
+    @Body() request: CreateShortenedUrlRequest
+  ): Promise<CreateShortenedUrlResponse> {
+    console.log('TESTING!!!!');
+    console.log(request);
     const response: CreateShortenedUrlResponse = {
       data: {
         type: 'shortenedUrl',
         id: -1,
+        attributes: {},
       },
+      errors: [],
     };
 
     if (
@@ -133,26 +167,40 @@ export class AppController {
       request.data.attributes?.alias &&
       request.data.attributes?.url
     ) {
-      const db = await initORM();
+      try {
+        const db = new PrismaClient();
 
-      const shortenedUrl = new ShortenedUrl();
-      shortenedUrl.alias = request.data.attributes.alias;
-      shortenedUrl.url = request.data.attributes.url;
-      await db.em.persistAndFlush(shortenedUrl);
+        const shortenedUrl = await db.shortened_url.create({
+          data: {
+            alias: request.data.attributes.alias,
+            url: request.data.attributes.url,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        });
 
-      if (shortenedUrl && shortenedUrl.id >= 0) {
-        response.data.id = shortenedUrl.id;
-        response.data.attributes.alias = shortenedUrl.alias;
-        response.data.attributes.url = shortenedUrl.url;
-      } else {
+        db.$disconnect();
+
+        console.log(shortenedUrl);
+        if (shortenedUrl && shortenedUrl.id >= 0) {
+          response.data.id = shortenedUrl.id;
+          response.data.attributes.alias = shortenedUrl.alias;
+          response.data.attributes.url = shortenedUrl.url;
+          console.log('response');
+          console.log(response);
+        } else {
+          response.errors.push({
+            detail:
+              'Shortened URL not created with given attributes. Failed to create!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
         response.errors.push({
-          detail:
-            'Shortened URL not created with given attributes. Failed to create!',
-          status: 404,
+          detail: ex,
+          status: 500,
         });
       }
-
-      return response;
     } else {
       response.errors.push({
         detail:
@@ -165,40 +213,58 @@ export class AppController {
   }
 
   @Post('updateShortenedUrl')
-  async updateShortenedUrl(req: Request): Promise<UpdateShortenedUrlResponse> {
-    const request = (await req.json()) as UpdateShortenedUrlRequest;
+  async updateShortenedUrl(
+    @Body() request: UpdateShortenedUrlRequest
+  ): Promise<UpdateShortenedUrlResponse> {
     const response: UpdateShortenedUrlResponse = {
       data: {
         type: 'shortenedUrl',
         id: -1,
+        attributes: {},
       },
+      errors: [],
     };
 
     if (request && request.data.id) {
-      const db = await initORM();
+      try {
+        const db = new PrismaClient();
 
-      const shortenedUrl = new ShortenedUrl();
-      shortenedUrl.alias = request.data.attributes.alias;
-      shortenedUrl.url = request.data.attributes.url;
-      await db.em.persistAndFlush(shortenedUrl);
+        const shortenedUrl = await db.shortened_url.update({
+          where: {
+            id: request.data.id,
+          },
+          data: {
+            url: request.data.attributes.url,
+            alias: request.data.attributes.alias,
+            visits: request.data.attributes.visits,
+            updated_at: new Date(),
+          },
+        });
 
-      if (shortenedUrl && shortenedUrl.id >= 0) {
-        response.data.id = shortenedUrl.id;
-        response.data.attributes.alias = shortenedUrl.alias;
-        response.data.attributes.url = shortenedUrl.url;
-      } else {
+        db.$disconnect();
+
+        if (shortenedUrl && shortenedUrl.id >= 0) {
+          response.data.id = shortenedUrl.id;
+          response.data.attributes.alias = shortenedUrl.alias;
+          response.data.attributes.url = shortenedUrl.url;
+        } else {
+          response.errors.push({
+            detail:
+              'Shortened URL not updated with given attributes. Failed to update!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
         response.errors.push({
           detail:
-            'Shortened URL not created with given attributes. Failed to create!',
-          status: 404,
+            'Shortened URL not updated with given attributes. Failed to update!',
+          status: 500,
         });
       }
-
-      return response;
     } else {
       response.errors.push({
         detail:
-          'Given attributes were invalid or incomplete. Failed to create!',
+          'Given attributes were invalid or incomplete. Failed to update!',
         status: 500,
       });
     }
@@ -208,36 +274,46 @@ export class AppController {
 
   @Post('getShortenedUrlByAlias')
   async getShortenedUrlByAlias(
-    req: Request
+    @Body() request: GetShortenedUrlByAliasRequest
   ): Promise<GetShortenedUrlByAliasResponse> {
-    const request = (await req.json()) as GetShortenedUrlByAliasRequest;
     const response: GetShortenedUrlByAliasResponse = {
       data: {
         type: 'shortenedUrl',
         id: -1,
+        attributes: {},
       },
+      errors: [],
     };
 
     if (request && request.data.attributes?.alias) {
-      const db = await initORM();
+      try {
+        const db = new PrismaClient();
 
-      const shortenedUrl = await db.em.findOne(ShortenedUrl, {
-        alias: request.data.attributes.alias,
-      });
+        const shortenedUrl = await db.shortened_url.findFirst({
+          where: {
+            alias: request.data.attributes.alias,
+          },
+        });
 
-      if (shortenedUrl && shortenedUrl.id >= 0) {
-        response.data.id = shortenedUrl.id;
-        response.data.attributes.alias = shortenedUrl.alias;
-        response.data.attributes.url = shortenedUrl.url;
-      } else {
+        db.$disconnect();
+
+        if (shortenedUrl && shortenedUrl.id >= 0) {
+          response.data.id = shortenedUrl.id;
+          response.data.attributes.alias = shortenedUrl.alias;
+          response.data.attributes.url = shortenedUrl.url;
+        } else {
+          response.errors.push({
+            detail:
+              'Shortened URL not found with given attributes. Failed to get!',
+            status: 404,
+          });
+        }
+      } catch (ex) {
         response.errors.push({
-          detail:
-            'Shortened URL not found with given attributes. Failed to get!',
-          status: 404,
+          detail: ex,
+          status: 500,
         });
       }
-
-      return response;
     } else {
       response.errors.push({
         detail: 'Given attributes were invalid or incomplete. Failed to get!',
