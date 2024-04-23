@@ -6,6 +6,8 @@
 
 There are several pages that may be navigated, and the website is rather simple. You may use just the index page to shorten URLs, copy them, and navigate to them without ever leaving it. You can also create an account, login, and navigate to the dashboard to view all previously shortened URLs while logged in. These may be adjusted by double-clicking within the Alias cell of any row and editing the text within.
 
+![image](https://github.com/dom426/deep-origin-url-shortener/assets/3878759/b316687f-ed68-4678-962a-c50cf875a144)
+
 # Installation & Run
 
 1. Ensure that you have <a href="https://nodejs.org/en/download">NodeJS (lts)</a>, <a href="https://www.docker.com/get-started/">Docker</a>, and <a href="https://code.visualstudio.com/download">VS Code</a> installed as these are the tools used during development.
