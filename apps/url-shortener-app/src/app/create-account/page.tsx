@@ -26,7 +26,6 @@ export default function CreateAccount() {
       const request: CreateAccountRequest = {
         data: {
           type: 'account',
-          id: -1,
           attributes: {
             username: username,
             password: password,

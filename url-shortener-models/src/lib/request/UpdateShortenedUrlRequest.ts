@@ -5,7 +5,7 @@ const schema = z.object({
     type: z.string(),
     id: z.number(),
     attributes: z.object({
-      url: z.string(),
+      url: z.string().url(),
       alias: z.string(),
       visits: z.number(),
     }),

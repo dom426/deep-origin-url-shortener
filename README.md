@@ -12,6 +12,26 @@ There are several pages that may be navigated, and the website is rather simple.
 **Dashboard**
 ![image](https://github.com/dom426/deep-origin-url-shortener/assets/3878759/3e2adbfd-d081-4064-8c5e-630369d7d22c)
 
+# Folder Structure
+
+- This is an nx-generated workspace which contains the majority of configuration at the root level, alongside an apps folder and a library named **url-shortener-models**.
+  - apps: there are several applications including **url-shortener-api** (the server / backend application written in NestJS), and **url-shortener-app** (the client / frontend application written in NextJS).
+    - url-shortener-api: contains all config at the top of its structure and all code within its src directory. The prisma service all rests here for convenience of access by the application.
+      - src: contains all code for this application and the following directories.
+        - app: contains the main controllers, services, and module of the api.
+        - prisma: contains the schema and migrations for prisma to function.
+    - url-shortener-app: contains all config at the top of its structure and all code within its src directory.
+      - src: contains all code for this application, a utils file which contains various helper functions used by the frontend, and the following directories.
+        - app: contains the typical NextJS structure which includes several pages split by route, a default layout page, a default loading page, the index page, and an api directory that includes all proxy API requests.
+          - create-account: the directory for the Create Account screen of the website.
+          - dashboard: the directory for the Dashboard screen of the website.
+          - login: the directory for the Login screen of the website.
+          - api: includes API routes for all API calls that are proxied to the url-shortener-api (server) on matching routes.
+        - components: contains several components that are used throughout the website.
+          - logo: the logo component that can be seen within the navigation bar and on several screens made adjustable for its size.
+          - navigation-bar: the navigation bar component that can be seen across the entire website and is written into the layout.
+  - url-shortener-models: a library which strictly contains zod schema based types for use as response and request types for API calls.
+
 # Installation & Run
 
 1. Ensure that you have <a href="https://nodejs.org/en/download">NodeJS (lts)</a>, <a href="https://www.docker.com/get-started/">Docker</a>, and <a href="https://code.visualstudio.com/download">VS Code</a> installed as these are the tools used during development.

@@ -44,8 +44,8 @@ export class AppController {
       request.data.attributes?.username &&
       request.data.attributes?.password
     ) {
-      const salt = process.env.SALT_KEY
-        ? process.env.SALT_KEY
+      const salt = process.env.HASH_KEY
+        ? process.env.HASH_KEY
         : '$2b$10$6oz8mt.oghlocUsl4efRzO';
       const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 
@@ -101,8 +101,8 @@ export class AppController {
       request.data.attributes?.username &&
       request.data.attributes?.password
     ) {
-      const salt = process.env.SALT_KEY
-        ? process.env.SALT_KEY
+      const salt = process.env.HASH_KEY
+        ? process.env.HASH_KEY
         : '$2b$10$6oz8mt.oghlocUsl4efRzO';
       const hashed = await bcrypt.hash(request.data.attributes.password, salt);
 

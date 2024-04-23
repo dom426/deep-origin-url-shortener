@@ -26,13 +26,13 @@ export default function Index() {
     if (originalUrl) {
       if (!checkValidUrl(originalUrl)) {
         setDisplayError('Invalid URL!');
+        setIsLoading(false);
         return;
       }
 
       const request: CreateShortenedUrlRequest = {
         data: {
           type: 'account',
-          id: -1,
           attributes: {
             alias: generateAlias(),
             url: originalUrl,

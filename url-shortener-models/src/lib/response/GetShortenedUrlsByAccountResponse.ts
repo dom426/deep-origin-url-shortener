@@ -7,7 +7,7 @@ const errorSchema = z.object({
 const shortenedUrl = z.object({
   id: z.number(),
   alias: z.string(),
-  url: z.string(),
+  url: z.string().url(),
   visits: z.number(),
   updated_at: z.date(),
 });

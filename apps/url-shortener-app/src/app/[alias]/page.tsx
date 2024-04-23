@@ -16,7 +16,7 @@ export default function Alias({ params }: { params: { alias: string } }) {
 
   useEffect(() => {
     getUrlByAlias();
-  }, []);
+  });
 
   const getUrlByAlias = async () => {
     const request: GetShortenedUrlByAliasRequest = {
