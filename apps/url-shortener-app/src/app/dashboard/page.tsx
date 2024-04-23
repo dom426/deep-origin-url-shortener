@@ -32,7 +32,14 @@ export default function Dashboard() {
     getShortenedUrls();
   }, []);
 
-  async function onUpdateRow(updatedRow: shortenedUrl) {
+  async function onUpdateRow(
+    updatedRow: shortenedUrl,
+    originalRow: shortenedUrl
+  ) {
+    if (updatedRow.alias.length !== 6) {
+      return originalRow;
+    }
+
     setIsLoading(true);
 
     const request: UpdateShortenedUrlRequest = {
@@ -62,7 +69,11 @@ export default function Dashboard() {
           setDisplayError(finalResponse.errors[0].detail);
         }
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    return updatedRow;
   }
 
   async function getShortenedUrls() {
@@ -177,7 +188,8 @@ export default function Dashboard() {
           loading={isLoading}
           rows={shortenedUrls}
           columns={columns}
-          processRowUpdate={(u, r) => onUpdateRow(u)}
+          processRowUpdate={(u, r) => onUpdateRow(u, r)}
+          onProcessRowUpdateError={(e) => console.log(e)}
         />
       </div>
     </div>
