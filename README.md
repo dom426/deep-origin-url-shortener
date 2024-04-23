@@ -15,12 +15,23 @@ There are several pages that may be navigated, and the website is rather simple.
 # Installation & Run
 
 1. Ensure that you have <a href="https://nodejs.org/en/download">NodeJS (lts)</a>, <a href="https://www.docker.com/get-started/">Docker</a>, and <a href="https://code.visualstudio.com/download">VS Code</a> installed as these are the tools used during development.
+
 2. Grab the PostgreSQL docker image <a href="https://hub.docker.com/_/postgres">here</a> and follow the instructions to stand it up. To run it with the settings this project uses, run the following command:
    `docker run -d --name deep-origin -p 5432:5432 -e POSTGRES_PASSWORD=deepOrigin123 postgres`
-3. Once the database container is set up, make sure to run the container itself before proceeding.
-4. Clone the repository down to local, and run within VS Code. Within the workspace root, run the following command to install all required packages: `npm install`
-5. To run both the server and client in tandem: `npx nx run-many -t dev serve -p url-shortener-app url-shortener-api`. This will start the server on port 3000, and the client on port 5000. Instead, to run separately, the server may be run with the command `npm run server` and the client with `npm run client`.
-6. Either press F5 on keyboard or manually navigate within a web browser of your choice to http://localhost:5000 to start using the application!
+   Once the database container is set up, make sure to run the container itself before proceeding.
+
+3. Place the following in the root level .env file:
+   `DATABASE_URL="postgresql://postgres:deepOrigin123@localhost:5432/url_shortener?schema=public"`
+
+4. To generate the database, run the following command:
+   `npx prisma migrate dev --name init`
+
+5. Clone the repository down to local, and run within VS Code. Within the workspace root, run the following command to install all required packages:
+   `npm install`
+
+6. To run both the server and client in tandem: `npx nx run-many -t dev serve -p url-shortener-app url-shortener-api`. This will start the server on port 3000, and the client on port 5000. Instead, to run separately, the server may be run with the command `npm run server` and the client with `npm run client`.
+
+7. Either press F5 on keyboard or manually navigate within a web browser of your choice to http://localhost:5000 to start using the application!
 
 # Credits
 

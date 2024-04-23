@@ -7,6 +7,9 @@
     "client": "nx dev url-shortener-app -p 5000",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
+  "prisma": {
+    "schema": "./apps/url-shortener-api/src/prisma/schema.prisma"
+  },
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.4",
